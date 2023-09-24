@@ -78,7 +78,7 @@ app.use(bodyParser.json());
 // Step 1
 // Build the authorization URL to redirect a user
 // to when they choose to install the app
-const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=6933729d-00cf-45f2-95dc-efdf4718f8da&redirect_uri=http://localhost:3000/oauth-callback&scope=social%20oauth%20tickets%20conversations.visitor_identification.tokens.create%20conversations.read%20conversations.write%20crm.objects.owners.read`;
+const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=http://localhost:3000/oauth-callback&scope=social%20oauth%20tickets%20conversations.visitor_identification.tokens.create%20conversations.read%20conversations.write%20crm.objects.owners.read`;
 // 'https://app.hubspot.com/oauth/authorize' +
 // `?client_id=${encodeURIComponent(CLIENT_ID)}` + // app's client ID
 // `&scope=${encodeURIComponent(SCOPES)}` + // scopes being requested by the app
