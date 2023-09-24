@@ -139,7 +139,6 @@ app.post("/webhook", async (req, res) => {
     const body = req.body[0];
     const threadId = body?.objectId;
     const portalId = body.portalId;
-    console.log(body, "-----body");
     const [threadData, ownerData] = await Promise.all([
       model.Thread.findOne({
         where: {
@@ -157,7 +156,6 @@ app.post("/webhook", async (req, res) => {
       actorId = ownerData?.actorId;
     if (!ownerData) {
       const owners = await callHubspotAPIToGethubspotAccountOwners(API_KEY);
-      console.log(owners, "-----owners");
       const owner = owners?.results[0];
 
       await model.Owner.create({
