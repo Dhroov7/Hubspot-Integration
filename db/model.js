@@ -1,0 +1,46 @@
+const { Sequelize, DataTypes } = require('sequelize');
+
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: 'db.sqlite'
+});
+
+const Thread = sequelize.define('Thread', {
+  id: {
+    type: DataTypes.NUMBER,
+    unique: true,
+    primaryKey: true
+  },
+  ticketId: {
+    type: DataTypes.NUMBER,
+    unique: true
+  }
+});
+
+const Owner = sequelize.define('Owner', {
+  id: {
+    type: DataTypes.NUMBER,
+    unique: true,
+    primaryKey: true
+  },
+  email: {
+    type: DataTypes.STRING,
+    unique: true,
+  },
+  actorId: {
+    type: DataTypes.STRING,
+    unique: true
+  },
+  portalId: {
+    type: DataTypes.NUMBER,
+    unique: true
+  }
+});
+
+module.exports = {
+  sequelize,
+  model: {
+    Thread,
+    Owner
+  }
+};
