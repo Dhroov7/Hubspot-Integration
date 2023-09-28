@@ -4,6 +4,10 @@ const request = require("request-promise-native");
 const NodeCache = require("node-cache");
 const session = require("express-session");
 const opn = require("open");
+const dotenv = require("dotenv");
+
+dotenv.config();
+
 const app = express();
 const bodyParser = require("body-parser");
 const { model, sequelize } = require("./db/model");
