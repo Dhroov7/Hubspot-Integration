@@ -157,7 +157,7 @@ app.post("/webhook", async (req, res) => {
       console.log("Refreshing expired access token");
       API_KEY = await refreshAccessToken(body.portalId).access_token;
     }
-    const threadId = body?.objectId;
+    const threadId = body.objectId;
     const portalId = body.portalId;
     const [threadData, ownerData] = await Promise.all([
       model.Thread.findOne({
