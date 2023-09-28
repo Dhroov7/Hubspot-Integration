@@ -86,7 +86,7 @@ const callHubspotAPIToSendMessage = async (payload, sendActorId, API_KEY) => {
         ],
       },
     ],
-    senderActorId: sendActorId,
+    senderActorId: sendActorId, //A-userID
     channelId: payload.channelId,
     channelAccountId: payload.channelAccountId,
   };
@@ -153,6 +153,18 @@ const callHubspotAPIToCreateTicketCustomProperty = async (API_KEY) => {
   });
 };
 
+const callHubspotAPIToGetPortalID = async (API_KEY) => {
+  const response = await axios.get(
+    `https://api.hubapi.com/account-info/v3/details`,
+    {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    }
+  );
+  return response.data;
+}
+
 module.exports = {
   callHubspotAPIToCreateTicket,
   callHubspotAPIToCreateTicketCustomProperty,
@@ -160,4 +172,5 @@ module.exports = {
   callHubspotAPIToGetTicketSettings,
   callHubspotAPIToGethubspotAccountOwners,
   callHubspotAPIToSendMessage,
+  callHubspotAPIToGetPortalID
 };

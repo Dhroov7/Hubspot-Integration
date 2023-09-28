@@ -37,10 +37,21 @@ const Owner = sequelize.define('Owner', {
   }
 });
 
+const RefreshToken = sequelize.define('refreshToken', {
+  portalId: {
+    type: DataTypes.STRING,
+    unique: true
+  },
+  token: {
+    type: DataTypes.STRING
+  }
+});
+
 module.exports = {
   sequelize,
   model: {
     Thread,
-    Owner
+    Owner,
+    RefreshToken
   }
 };

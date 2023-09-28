@@ -14,14 +14,12 @@ const {
   callHubspotAPIToGetMessageDetails,
   callHubspotAPIToGetTicketSettings,
   callHubspotAPIToGethubspotAccountOwners,
+  callHubspotAPIToGetPortalID,
 } = require("./util");
 
 const PORT = 3000;
 
-const refreshTokenStore = {};
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
-
-let API_KEY;
 
 if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
   throw new Error("Missing CLIENT_ID or CLIENT_SECRET environment variable.");
@@ -124,19 +122,37 @@ app.get("/oauth-callback", async (req, res) => {
     console.log(
       "===> Step 4: Exchanging authorization code for an access token and refresh token"
     );
-    const token = await exchangeForTokens(req.sessionID, authCodeProof);
+    const token = await exchangeForTokens(authCodeProof);
     if (token.message) {
       return res.redirect(`/error?msg=${token.message}`);
     }
+    const userPortalDetails = await callHubspotAPIToGetPortalID(token.access_token);
+    console.log(userPortalDetails, "------user portal details");
+    const portalId = userPortalDetails.portalId;
+    await model.RefreshToken.create({
+      portalId: portalId,
+      token: token.refresh_token,
+    });
+    accessTokenCache.set(
+      portalId,
+      token.access_token,
+      Math.round(token.expires_in * 0.75)
+    );
     // Once the tokens have been retrieved, use them to make a query
     // to the HubSpot API
-    res.redirect(`/`);
+    res.redirect(`/?portalId=${portalId}`);
   }
 });
 
 app.post("/webhook", async (req, res) => {
   try {
     const body = req.body[0];
+    console.log(body, "------body");
+    const API_KEY = accessTokenCache.get(body.portalId);
+    if (!API_KEY) {
+      console.log("Refreshing expired access token");
+      API_KEY = await refreshAccessToken(body.portalId).access_token;
+    }
     const threadId = body?.objectId;
     const portalId = body.portalId;
     const [threadData, ownerData] = await Promise.all([
@@ -172,7 +188,11 @@ app.post("/webhook", async (req, res) => {
     }
     let ticketId = threadData?.dataValues?.ticketId;
     if (!threadData) {
-      const ticketData = await callHubspotAPIToCreateTicket(threadId, ownerId, API_KEY);
+      const ticketData = await callHubspotAPIToCreateTicket(
+        threadId,
+        ownerId,
+        API_KEY
+      );
       ticketId = ticketData.id;
       await model.Thread.create({
         id: threadId,
@@ -203,7 +223,7 @@ app.post("/webhook", async (req, res) => {
 //   Exchanging Proof for an Access Token   //
 //==========================================//
 
-const exchangeForTokens = async (userId, exchangeProof) => {
+const exchangeForTokens = async (exchangeProof) => {
   try {
     const responseBody = await request.post(
       "https://api.hubapi.com/oauth/v1/token",
@@ -214,15 +234,8 @@ const exchangeForTokens = async (userId, exchangeProof) => {
     // Usually, this token data should be persisted in a database and associated with
     // a user identity.
     const tokens = JSON.parse(responseBody);
-    refreshTokenStore[userId] = tokens.refresh_token;
-    accessTokenCache.set(
-      userId,
-      tokens.access_token,
-      Math.round(tokens.expires_in * 0.75)
-    );
-
     console.log("       > Received an access token and refresh token");
-    return tokens.access_token;
+    return tokens;
   } catch (e) {
     console.error(
       `       > Error exchanging ${exchangeProof.grant_type} for access token`
@@ -231,87 +244,39 @@ const exchangeForTokens = async (userId, exchangeProof) => {
   }
 };
 
-const refreshAccessToken = async (userId) => {
+const refreshAccessToken = async (portalId) => {
+  const refreshToken = await model.RefreshToken.findOne({
+    where: {
+      portalId: portalId,
+    },
+  });
   const refreshTokenProof = {
     grant_type: "refresh_token",
     client_id: CLIENT_ID,
     client_secret: CLIENT_SECRET,
     redirect_uri: REDIRECT_URI,
-    refresh_token: refreshTokenStore[userId],
+    refresh_token: refreshToken?.dataValues?.token,
   };
-  return await exchangeForTokens(userId, refreshTokenProof);
+  return await exchangeForTokens(refreshTokenProof);
 };
 
-const getAccessToken = async (userId) => {
-  // If the access token has expired, retrieve
-  // a new one using the refresh token
-  if (!accessTokenCache.get(userId)) {
-    console.log("Refreshing expired access token");
-    await refreshAccessToken(userId);
-  }
-  return accessTokenCache.get(userId);
-};
-
-const isAuthorized = (userId) => {
-  return refreshTokenStore[userId] ? true : false;
-};
-
-//====================================================//
-//   Using an Access Token to Query the HubSpot API   //
-//====================================================//
-
-const getContact = async (accessToken) => {
-  console.log("");
-  console.log(
-    "=== Retrieving a contact from HubSpot using the access token ==="
-  );
-  try {
-    const headers = {
-      Authorization: `Bearer ${API_KEY}`,
-      "Content-Type": "application/json",
-    };
-    console.log(
-      "===> Replace the following request.get() to test other API calls"
-    );
-    console.log(
-      "===> request.get('https://api.hubapi.com/contacts/v1/lists/all/contacts/all?count=1')"
-    );
-    const result = await request.get(
-      "https://api.hubapi.com/contacts/v1/lists/all/contacts/all?count=1",
-      {
-        headers: headers,
-      }
-    );
-
-    return JSON.parse(result).contacts[0];
-  } catch (e) {
-    console.error("  > Unable to retrieve contact");
-    return JSON.parse(e.response.body);
-  }
-};
-
-//========================================//
-//   Displaying information to the user   //
-//========================================//
-
-const displayContactName = (res, contact) => {
-  if (contact.status === "error") {
-    res.write(
-      `<p>Unable to retrieve contact! Error Message: ${contact.message}</p>`
-    );
-    return;
-  }
-  const { firstname, lastname } = contact.properties;
-  res.write(`<p>Contact name: ${firstname.value} ${lastname.value}</p>`);
+const isAuthorized = async (portalId) => {
+  const refreshToken = await model.RefreshToken.findOne({
+    where: {
+      portalId,
+    },
+  });
+  console.log(refreshToken, "-----in refresh token")
+  return refreshToken?.dataValues?.token ? true : false;
 };
 
 app.get("/", async (req, res) => {
+  const portalId = req.query?.portalId || '';
+  console.log(req.query, "----query");
   res.setHeader("Content-Type", "text/html");
   res.write(`<h2>HubSpot OAuth 2.0 Quickstart App</h2>`);
-  if (isAuthorized(req.sessionID)) {
-    const accessToken = await getAccessToken(req.sessionID);
-    API_KEY = accessToken;
-    res.write(`<h4>Access token: ${API_KEY}</h4>`);
+  if (await isAuthorized(portalId)) {
+    res.write(`<h4>App Installed!!</h4>`);
   } else {
     res.write(`<a href="/install"><h3>Install the app</h3></a>`);
   }
@@ -324,7 +289,7 @@ app.get("/error", (req, res) => {
   res.end();
 });
 
-sequelize.sync().then(() => {
+sequelize.sync({ alter: true }).then(() => {
   app.listen(PORT, () =>
     console.log(`=== Starting your app on http://localhost:${PORT} ===`)
   );
