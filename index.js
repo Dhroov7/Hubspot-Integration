@@ -10,7 +10,8 @@ dotenv.config();
 
 const app = express();
 const bodyParser = require("body-parser");
-const { model, sequelize } = require("./db/model");
+const path = require('path');
+const { model, sequelize } = require(path.join(__dirname, './db/model'));
 const {
   callHubspotAPIToSendMessage,
   callHubspotAPIToCreateTicket,
@@ -19,7 +20,7 @@ const {
   callHubspotAPIToGetTicketSettings,
   callHubspotAPIToGethubspotAccountOwners,
   callHubspotAPIToGetPortalID,
-} = require("./util");
+} = require(path.join(__dirname, './util'));
 
 const PORT = 3000;
 
