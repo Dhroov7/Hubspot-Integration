@@ -10,7 +10,7 @@ dotenv.config();
 
 const app = express();
 const bodyParser = require("body-parser");
-const { model, sequelize } = require('./db/model');
+const { model, sequelize } = require("./db/model");
 const {
   callHubspotAPIToSendMessage,
   callHubspotAPIToCreateTicket,
@@ -19,7 +19,7 @@ const {
   callHubspotAPIToGetTicketSettings,
   callHubspotAPIToGethubspotAccountOwners,
   callHubspotAPIToGetPortalID,
-} = require('./util');
+} = require("./util");
 
 const PORT = 3000;
 
@@ -130,7 +130,9 @@ app.get("/oauth-callback", async (req, res) => {
     if (token.message) {
       return res.redirect(`/error?msg=${token.message}`);
     }
-    const userPortalDetails = await callHubspotAPIToGetPortalID(token.access_token);
+    const userPortalDetails = await callHubspotAPIToGetPortalID(
+      token.access_token
+    );
     console.log(userPortalDetails, "------user portal details");
     const portalId = userPortalDetails.portalId;
     await model.RefreshToken.create({
@@ -270,21 +272,26 @@ const isAuthorized = async (portalId) => {
       portalId,
     },
   });
-  console.log(refreshToken, "-----in refresh token")
+  console.log(refreshToken, "-----in refresh token");
   return refreshToken?.dataValues?.token ? true : false;
 };
 
 app.get("/", async (req, res) => {
-  const portalId = req.query?.portalId || '';
-  console.log(req.query, "----query");
-  res.setHeader("Content-Type", "text/html");
-  res.write(`<h2>HubSpot OAuth 2.0 Quickstart App</h2>`);
-  if (await isAuthorized(portalId)) {
-    res.write(`<h4>App Installed!!</h4>`);
-  } else {
-    res.write(`<a href="/install"><h3>Install the app</h3></a>`);
+  try {
+    const portalId = req.query?.portalId || "";
+    console.log(req.query, "----query");
+    res.setHeader("Content-Type", "text/html");
+    res.write(`<h2>HubSpot OAuth 2.0 Quickstart App</h2>`);
+    if (await isAuthorized(portalId)) {
+      res.write(`<h4>App Installed!!</h4>`);
+    } else {
+      res.write(`<a href="/install"><h3>Install the app</h3></a>`);
+    }
+    res.end();
+  } catch (err) {
+    console.log(err);
+    res.send('Error');
   }
-  res.end();
 });
 
 app.get("/error", (req, res) => {
@@ -293,9 +300,9 @@ app.get("/error", (req, res) => {
   res.end();
 });
 
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   res.status(200).send();
-})
+});
 
 sequelize.sync({ alter: true }).then(() => {
   app.listen(PORT, () =>
