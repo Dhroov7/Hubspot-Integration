@@ -293,6 +293,10 @@ app.get("/error", (req, res) => {
   res.end();
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).send();
+})
+
 sequelize.sync({ alter: true }).then(() => {
   app.listen(PORT, () =>
     console.log(`=== Starting your app on http://localhost:${PORT} ===`)
