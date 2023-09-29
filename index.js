@@ -172,11 +172,11 @@ app.post("/webhook", async (req, res) => {
       }),
     ]);
 
-    let ownerId = ownerData?.id,
-      actorId = ownerData?.actorId;
+    let ownerId = ownerData.id,
+      actorId = ownerData.actorId;
     if (!ownerData) {
       const owners = await callHubspotAPIToGethubspotAccountOwners(API_KEY);
-      const owner = owners?.results[0];
+      const owner = owners.results[0];
 
       await model.Owner.create({
         email: owner.email,
@@ -190,7 +190,7 @@ app.post("/webhook", async (req, res) => {
       //Still not sure where to do this
       await callHubspotAPIToCreateTicketCustomProperty(API_KEY);
     }
-    let ticketId = threadData?.dataValues?.ticketId;
+    let ticketId = threadData.dataValues.ticketId;
     if (!threadData) {
       const ticketData = await callHubspotAPIToCreateTicket(
         threadId,
@@ -259,7 +259,7 @@ const refreshAccessToken = async (portalId) => {
     client_id: CLIENT_ID,
     client_secret: CLIENT_SECRET,
     redirect_uri: REDIRECT_URI,
-    refresh_token: refreshToken?.dataValues?.token,
+    refresh_token: refreshToken.dataValues.token,
   };
   return await exchangeForTokens(refreshTokenProof);
 };
@@ -271,11 +271,11 @@ const isAuthorized = async (portalId) => {
     },
   });
   console.log(refreshToken, "-----in refresh token")
-  return refreshToken?.dataValues?.token ? true : false;
+  return refreshToken.dataValues.token ? true : false;
 };
 
 app.get("/", async (req, res) => {
-  const portalId = req.query?.portalId || '';
+  const portalId = req.query.portalId || '';
   console.log(req.query, "----query");
   res.setHeader("Content-Type", "text/html");
   res.write(`<h2>HubSpot OAuth 2.0 Quickstart App</h2>`);
