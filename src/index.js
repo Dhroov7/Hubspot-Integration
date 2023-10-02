@@ -19,15 +19,12 @@ const {
   callHubspotAPIToGetTicketSettings,
   callHubspotAPIToGethubspotAccountOwners,
   callHubspotAPIToGetPortalID,
+  callHubspotAPIToUpdateTicket
 } = require("./util");
 
 const PORT = 3000;
 
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
-
-if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
-  throw new Error("Missing CLIENT_ID or CLIENT_SECRET environment variable.");
-}
 
 //===========================================================================//
 //  HUBSPOT APP CONFIGURATION
@@ -39,8 +36,12 @@ if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
 
 // Replace the following with the values from your app auth config,
 // or set them as environment variables before running.
-const CLIENT_ID = process.env.CLIENT_ID;
-const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const CLIENT_ID = process.env?.CLIENT_ID;
+const CLIENT_SECRET = process.env?.CLIENT_SECRET;
+
+if (!CLIENT_ID || !CLIENT_SECRET) {
+  throw new Error("Missing CLIENT_ID or CLIENT_SECRET environment variable.");
+}
 
 // Scopes for this app will default to `crm.objects.contacts.read`
 // To request others, set the SCOPE environment variable instead
@@ -106,7 +107,8 @@ app.get("/install", (req, res) => {
 // Receive the authorization code from the OAuth 2.0 Server,
 // and process it based on the query parameters that are passed
 app.get("/oauth-callback", async (req, res) => {
-  console.log("===> Step 3: Handling the request sent by the server");
+  try {
+    console.log("===> Step 3: Handling the request sent by the server");
 
   // Received a user authorization code, so now combine that with the other
   // required values and exchange both for an access token and a refresh token
@@ -135,10 +137,17 @@ app.get("/oauth-callback", async (req, res) => {
     );
     console.log(userPortalDetails, "------user portal details");
     const portalId = userPortalDetails.portalId;
-    await model.RefreshToken.create({
-      portalId: portalId,
-      token: token.refresh_token,
+    const refreshTokenDetails = await model.RefreshToken.findOne({
+      where: {
+        portalId: portalId
+      }
     });
+    if (!refreshTokenDetails) {
+      await model.RefreshToken.create({
+        portalId: portalId,
+        token: token.refresh_token,
+      }); 
+    }
     accessTokenCache.set(
       portalId,
       token.access_token,
@@ -147,6 +156,10 @@ app.get("/oauth-callback", async (req, res) => {
     // Once the tokens have been retrieved, use them to make a query
     // to the HubSpot API
     res.redirect(`/?portalId=${portalId}`);
+  }
+  } catch (err) {
+    console.log(err, "----errr");
+    res.redirect(`/`);
   }
 });
 
@@ -211,12 +224,22 @@ app.post("/webhook", async (req, res) => {
     );
     const isChatbotEnabled = ticketProperties?.properties?.chatbot_enabled;
     if (isChatbotEnabled !== "NO") {
+      const message = 'Sorry, I cannot answer that. Can you rephrase your question?';
       const result = await callHubspotAPIToGetMessageDetails(
         body.objectId,
         body.messageId,
         API_KEY
       );
-      await callHubspotAPIToSendMessage(result?.data, actorId, API_KEY);
+      await callHubspotAPIToSendMessage(result?.data, actorId, API_KEY, message);
+      if (message === 'Sorry, I cannot answer that. Can you rephrase your question?') {
+        const updateObj = {
+          properties: {
+            hubspot_owner_id: ownerId,
+            hs_ticket_priority: "HIGH"
+          }
+        };
+        await callHubspotAPIToUpdateTicket(API_KEY, updateObj, ticketId);
+      }
     }
     return res.send("Done");
   } catch (err) {

@@ -26,7 +26,7 @@ const callHubspotAPIToCreateTicket = async (threadId, ownerId, API_KEY) => {
       subject: `Ticket with thread ${threadId}`,
       hubspot_owner_id: ownerId,
       hs_pipeline_stage: "1",
-      hs_ticket_priority: "HIGH",
+      hs_ticket_priority: "LOW",
     },
     associations: [
       {
@@ -62,7 +62,7 @@ const callHubspotAPIToGetMessageDetails = async (
   });
 };
 
-const callHubspotAPIToSendMessage = async (payload, sendActorId, API_KEY) => {
+const callHubspotAPIToSendMessage = async (payload, sendActorId, API_KEY, message) => {
   if (!payload.senders[0]?.deliveryIdentifier) {
     return;
   }
@@ -73,7 +73,7 @@ const callHubspotAPIToSendMessage = async (payload, sendActorId, API_KEY) => {
 
   const messageData = {
     type: "MESSAGE",
-    text: "Hey there, following up test",
+    text: message,
     recipients: [
       {
         actorId: payload.senders[0]?.actorId,
@@ -165,6 +165,17 @@ const callHubspotAPIToGetPortalID = async (API_KEY) => {
   return response.data;
 }
 
+const callHubspotAPIToUpdateTicket = async (API_KEY, updateObj, ticketId) => {
+  const url = `https://api.hubapi.com/crm/v3/objects/tickets/${ticketId}`;
+
+  return axios.patch(url, updateObj, {
+    headers: {
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
 module.exports = {
   callHubspotAPIToCreateTicket,
   callHubspotAPIToCreateTicketCustomProperty,
@@ -172,5 +183,6 @@ module.exports = {
   callHubspotAPIToGetTicketSettings,
   callHubspotAPIToGethubspotAccountOwners,
   callHubspotAPIToSendMessage,
-  callHubspotAPIToGetPortalID
+  callHubspotAPIToGetPortalID,
+  callHubspotAPIToUpdateTicket
 };
