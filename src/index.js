@@ -59,7 +59,8 @@ if (process.env.SCOPE) {
 }
 
 // On successful install, users will be redirected to /oauth-callback
-const REDIRECT_URI = `https://hubspot-integration.onrender.com/oauth-callback`;
+const REDIRECT_URI = `http://localhost:3000/oauth-callback`;
+// const REDIRECT_URI = `https://hubspot-integration.onrender.com/oauth-callback`;
 
 //===========================================================================//
 
@@ -81,7 +82,8 @@ app.use(bodyParser.json());
 // Step 1
 // Build the authorization URL to redirect a user
 // to when they choose to install the app
-const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=https://hubspot-integration.onrender.com/oauth-callback&scope=social%20oauth%20tickets%20conversations.visitor_identification.tokens.create%20conversations.read%20conversations.write%20crm.objects.owners.read`;
+const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=http://localhost:3000/oauth-callback&scope=social%20oauth%20tickets%20conversations.visitor_identification.tokens.create%20conversations.read%20conversations.write%20crm.objects.owners.read`;
+// const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=https://hubspot-integration.onrender.com/oauth-callback&scope=social%20oauth%20tickets%20conversations.visitor_identification.tokens.create%20conversations.read%20conversations.write%20crm.objects.owners.read`;
 // 'https://app.hubspot.com/oauth/authorize' +
 // `?client_id=${encodeURIComponent(CLIENT_ID)}` + // app's client ID
 // `&scope=${encodeURIComponent(SCOPES)}` + // scopes being requested by the app
@@ -168,6 +170,7 @@ app.post("/webhook", async (req, res) => {
     const body = req.body[0];
     console.log(body, "------body");
     let API_KEY = accessTokenCache.get(body.portalId);
+    console.log(API_KEY, "API KEY");
     if (!API_KEY) {
       console.log("Refreshing expired access token");
       API_KEY = await refreshAccessToken(body.portalId).access_token;
@@ -225,11 +228,26 @@ app.post("/webhook", async (req, res) => {
     const isChatbotEnabled = ticketProperties?.properties?.chatbot_enabled;
     if (isChatbotEnabled !== "NO") {
       const message = 'Sorry, I cannot answer that. Can you rephrase your question?';
+      
       const result = await callHubspotAPIToGetMessageDetails(
         body.objectId,
         body.messageId,
         API_KEY
       );
+
+      // // API 
+      // const userMessage = result?.data?.text;
+      // // TODO: change the URL
+      // const response = await axios.post('https://api.dialogflow.com/v1/query?v=20150910')
+      
+      // axios.post(url, messageData, {
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      // })
+
+      // TODO: check response.data.message is the message response from our API
+      // await callHubspotAPIToSendMessage(result?.data, actorId, API_KEY, response.data.body);
       await callHubspotAPIToSendMessage(result?.data, actorId, API_KEY, message);
       if (message === 'Sorry, I cannot answer that. Can you rephrase your question?') {
         const updateObj = {

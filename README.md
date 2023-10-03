@@ -48,6 +48,8 @@ _**Note:** You must be a super-admin for the account that you want to install th
    SCOPE='crm.contacts.read,forms'
    ```
    You can also add a `SCOPE` environment variable to specify a custom set of scopes. The scopes can be separated by a comma, space, or URL-encoded space (`%20`)
+   * For Gigit we use SCOPE set in index.js ONLY. Don't set .env var SCOPE
+   * SCOPE='social,oauth,tickets,conversations.visitor_identification.tokens.create,conversations.read,conversations.write,crm.objects.owners.read'
 3. From the root of the repository, run:
    ```bash
    $ yarn install
