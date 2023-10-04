@@ -5,6 +5,7 @@ const NodeCache = require("node-cache");
 const session = require("express-session");
 const opn = require("open");
 const dotenv = require("dotenv");
+const axios = require("axios");
 
 dotenv.config();
 
@@ -235,21 +236,38 @@ app.post("/webhook", async (req, res) => {
         API_KEY
       );
 
-      // // API 
-      // const userMessage = result?.data?.text;
-      // // TODO: change the URL
-      // const response = await axios.post('https://api.dialogflow.com/v1/query?v=20150910')
-      
-      // axios.post(url, messageData, {
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      // })
+      const userMessage = result.data.text;
+      const customerId = result.data.senders[0].actorId;
 
-      // TODO: check response.data.message is the message response from our API
-      // await callHubspotAPIToSendMessage(result?.data, actorId, API_KEY, response.data.body);
-      await callHubspotAPIToSendMessage(result?.data, actorId, API_KEY, message);
-      if (message === 'Sorry, I cannot answer that. Can you rephrase your question?') {
+      // because webhooks are called on every new conversation message created
+      if (customerId.startsWith('V')) {
+      const data = {
+        customerPsid: customerId,
+        // attached to Gigit Review Prompt
+        merchantPsid: '100451723148691',
+        chatMessage: userMessage,
+      };
+
+      console.log(data, "DATA SENT TO API");
+
+      // // TODO: change the URL
+      const response = await axios.post(
+        'https://theogbrand-testing--serverless-message-sender-fastapi-app.modal.run/reply/fbmessenger',
+        data,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log(response.data.body, "RESPONSE FROM API");
+      const aiGenMessage = response.data.body
+      
+      
+      await callHubspotAPIToSendMessage(result?.data, actorId, API_KEY, aiGenMessage);
+
+      if (aiGenMessage === 'Sorry, I cannot answer that. Can you rephrase your question?') {
         const updateObj = {
           properties: {
             hubspot_owner_id: ownerId,
@@ -258,6 +276,7 @@ app.post("/webhook", async (req, res) => {
         };
         await callHubspotAPIToUpdateTicket(API_KEY, updateObj, ticketId);
       }
+    }
     }
     return res.send("Done");
   } catch (err) {
