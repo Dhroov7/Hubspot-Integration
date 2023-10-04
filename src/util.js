@@ -176,6 +176,21 @@ const callHubspotAPIToUpdateTicket = async (API_KEY, updateObj, ticketId) => {
   });
 }
 
+const callGigitAPI = async (dataPayload) => {
+  const response = await axios.post(
+    'https://theogbrand-testing--serverless-message-sender-fastapi-app.modal.run/reply/fbmessenger',
+    dataPayload,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  console.log(response.data.body, 'RESPONSE FROM API');
+  return response.data.body;
+};
+
 module.exports = {
   callHubspotAPIToCreateTicket,
   callHubspotAPIToCreateTicketCustomProperty,
@@ -184,5 +199,6 @@ module.exports = {
   callHubspotAPIToGethubspotAccountOwners,
   callHubspotAPIToSendMessage,
   callHubspotAPIToGetPortalID,
-  callHubspotAPIToUpdateTicket
+  callHubspotAPIToUpdateTicket,
+  callGigitAPI
 };

@@ -5,7 +5,6 @@ const NodeCache = require("node-cache");
 const session = require("express-session");
 const opn = require("open");
 const dotenv = require("dotenv");
-const axios = require("axios");
 
 dotenv.config();
 
@@ -20,7 +19,8 @@ const {
   callHubspotAPIToGetTicketSettings,
   callHubspotAPIToGethubspotAccountOwners,
   callHubspotAPIToGetPortalID,
-  callHubspotAPIToUpdateTicket
+  callHubspotAPIToUpdateTicket,
+  callGigitAPI
 } = require("./util");
 
 const PORT = 3000;
@@ -236,11 +236,16 @@ app.post("/webhook", async (req, res) => {
         API_KEY
       );
 
+      console.log("RESULT", result.data);
       const userMessage = result.data.text;
       const customerId = result.data.senders[0].actorId;
+      const direction = result.data.direction;
+      const recipients = result.data.recipients;
+      const attempt = req.body[0].attemptNumber;
 
       // because webhooks are called on every new conversation message created
-      if (customerId.startsWith('V')) {
+      if (customerId.startsWith('V') && direction === 'INCOMING' && recipients.length == 0 && attempt == 0) {
+      console.log("attempt, direction, recipients", attempt, direction, recipients);
       const data = {
         customerPsid: customerId,
         // attached to Gigit Review Prompt
@@ -250,20 +255,7 @@ app.post("/webhook", async (req, res) => {
 
       console.log(data, "DATA SENT TO API");
 
-      // // TODO: change the URL
-      const response = await axios.post(
-        'https://theogbrand-testing--serverless-message-sender-fastapi-app.modal.run/reply/fbmessenger',
-        data,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      console.log(response.data.body, "RESPONSE FROM API");
-      const aiGenMessage = response.data.body
-      
+      const aiGenMessage = await callGigitAPI(data);
       
       await callHubspotAPIToSendMessage(result?.data, actorId, API_KEY, aiGenMessage);
 
