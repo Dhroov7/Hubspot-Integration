@@ -47,10 +47,8 @@ if (!CLIENT_ID || !CLIENT_SECRET) {
 // Scopes for this app will default to `crm.objects.contacts.read`
 // To request others, set the SCOPE environment variable instead
 let SCOPES = [
-  "social",
   "oauth",
   "tickets",
-  "conversations.visitor_identification.tokens.create",
   "conversations.read",
   "conversations.write",
   "crm.objects.owners.read",
@@ -83,8 +81,10 @@ app.use(bodyParser.json());
 // Step 1
 // Build the authorization URL to redirect a user
 // to when they choose to install the app
-const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=https://hubspot-install-app.onrender.com/oauth-callback&scope=social%20oauth%20tickets%20conversations.visitor_identification.tokens.create%20conversations.read%20conversations.write%20crm.objects.owners.read`;
-// const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=https://hubspot-integration.onrender.com/oauth-callback&scope=social%20oauth%20tickets%20conversations.visitor_identification.tokens.create%20conversations.read%20conversations.write%20crm.objects.owners.read`;
+// const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=http://localhost:3000/oauth-callback&scope=oauth%20tickets%20crm.objects.owners.read%20conversations.read%20conversations.write`
+
+const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=https://hubspot-integration.onrender.com/oauth-callback/oauth-callback&scope=oauth%20tickets%20crm.objects.owners.read%20conversations.read%20conversations.write`
+
 // 'https://app.hubspot.com/oauth/authorize' +
 // `?client_id=${encodeURIComponent(CLIENT_ID)}` + // app's client ID
 // `&scope=${encodeURIComponent(SCOPES)}` + // scopes being requested by the app
