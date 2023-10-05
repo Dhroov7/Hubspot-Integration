@@ -60,8 +60,8 @@ if (process.env.SCOPE) {
 }
 
 // On successful install, users will be redirected to /oauth-callback
-const REDIRECT_URI = `http://localhost:3000/oauth-callback`;
-// const REDIRECT_URI = `https://hubspot-integration.onrender.com/oauth-callback`;
+// const REDIRECT_URI = `http://localhost:3000/oauth-callback`;
+const REDIRECT_URI = `https://hubspot-install-app.onrender.com/oauth-callback`;
 
 //===========================================================================//
 
@@ -83,7 +83,7 @@ app.use(bodyParser.json());
 // Step 1
 // Build the authorization URL to redirect a user
 // to when they choose to install the app
-const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=http://localhost:3000/oauth-callback&scope=social%20oauth%20tickets%20conversations.visitor_identification.tokens.create%20conversations.read%20conversations.write%20crm.objects.owners.read`;
+const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=https://hubspot-install-app.onrender.com/oauth-callback&scope=social%20oauth%20tickets%20conversations.visitor_identification.tokens.create%20conversations.read%20conversations.write%20crm.objects.owners.read`;
 // const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=https://hubspot-integration.onrender.com/oauth-callback&scope=social%20oauth%20tickets%20conversations.visitor_identification.tokens.create%20conversations.read%20conversations.write%20crm.objects.owners.read`;
 // 'https://app.hubspot.com/oauth/authorize' +
 // `?client_id=${encodeURIComponent(CLIENT_ID)}` + // app's client ID
@@ -228,15 +228,13 @@ app.post("/webhook", async (req, res) => {
     );
     const isChatbotEnabled = ticketProperties?.properties?.chatbot_enabled;
     if (isChatbotEnabled !== "NO") {
-      const message = 'Sorry, I cannot answer that. Can you rephrase your question?';
-      
       const result = await callHubspotAPIToGetMessageDetails(
         body.objectId,
         body.messageId,
         API_KEY
       );
 
-      console.log("RESULT", result.data);
+      console.log("RESULT event that activated chatbot", result.data);
       const userMessage = result.data.text;
       const customerId = result.data.senders[0].actorId;
       const direction = result.data.direction;

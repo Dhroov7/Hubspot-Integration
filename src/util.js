@@ -1,3 +1,6 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 const axios = require("axios");
 
 const callHubspotAPIToGethubspotAccountOwners = async (API_KEY) => {
@@ -178,7 +181,7 @@ const callHubspotAPIToUpdateTicket = async (API_KEY, updateObj, ticketId) => {
 
 const callGigitAPI = async (dataPayload) => {
   const response = await axios.post(
-    'https://theogbrand-testing--serverless-message-sender-fastapi-app.modal.run/reply/fbmessenger',
+    process.env?.GIGIT_API_URL,
     dataPayload,
     {
       headers: {
