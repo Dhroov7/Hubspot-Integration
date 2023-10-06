@@ -182,11 +182,12 @@ const callHubspotAPIToUpdateTicket = async (API_KEY, updateObj, ticketId) => {
 const callHubspotAPIToGetInboxIDofThread = async (threadId, API_KEY) => {
   const url = `https://api.hubapi.com/conversations/v3/conversations/threads/${threadId}`;
 
-  return axios.get(url, {
+  const response = await axios.get(url, {
     headers: {
       authorization: `Bearer ${API_KEY}`,
     },
   });
+  return response.data.inboxId;
 }
 
 const callGigitAPI = async (dataPayload) => {
