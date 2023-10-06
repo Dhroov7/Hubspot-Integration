@@ -20,6 +20,7 @@ const {
   callHubspotAPIToGethubspotAccountOwners,
   callHubspotAPIToGetPortalID,
   callHubspotAPIToUpdateTicket,
+  callHubspotAPIToGetInboxIDofThread,
   callGigitAPI
 } = require("./util");
 
@@ -178,6 +179,16 @@ app.post("/webhook", async (req, res) => {
     }
     const threadId = body.objectId;
     const portalId = body.portalId;
+
+    const inboxId = callHubspotAPIToGetInboxIDofThread(threadId, API_KEY);
+
+    if (inboxId !== process.env?.HUBSPOT_INBOX_ID) {
+      console.log('Not Gigit inbox');
+      return;
+    }
+
+    console.log("Inbox ID responding to: ", inboxId);
+
     const [threadData, ownerData] = await Promise.all([
       model.Thread.findOne({
         where: {

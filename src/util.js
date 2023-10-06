@@ -179,6 +179,16 @@ const callHubspotAPIToUpdateTicket = async (API_KEY, updateObj, ticketId) => {
   });
 }
 
+const callHubspotAPIToGetInboxIDofThread = async (threadId, API_KEY) => {
+  const url = `https://api.hubapi.com/conversations/v3/conversations/threads/${threadId}`;
+
+  return axios.get(url, {
+    headers: {
+      authorization: `Bearer ${API_KEY}`,
+    },
+  });
+}
+
 const callGigitAPI = async (dataPayload) => {
   const response = await axios.post(
     process.env?.GIGIT_API_URL,
@@ -203,5 +213,6 @@ module.exports = {
   callHubspotAPIToSendMessage,
   callHubspotAPIToGetPortalID,
   callHubspotAPIToUpdateTicket,
+  callHubspotAPIToGetInboxIDofThread,
   callGigitAPI
 };

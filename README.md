@@ -72,3 +72,9 @@ $ docker build -t hs-oauth-quickstart:latest git://github.com/HubSpot/oauth-quic
 ```
 $ docker run --init -it -p 3000:3000 -e CLIENT_SECRET=$CLIENT_SECRET -e CLIENT_ID=$CLIENT_ID -e SCOPE=contacts,forms hs-oauth-quickstart:latest
 ```
+
+## Gigit Set up
+1. getting active inboxes
+curl --request GET \
+  --url https://api.hubapi.com/conversations/v3/conversations/inboxes \
+  --header 'authorization: Bearer <key>'
