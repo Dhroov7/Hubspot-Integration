@@ -170,9 +170,8 @@ app.post("/webhook", async (req, res) => {
   try {
     const body = req.body[0];
     console.log(body, "------body");
-    // let API_KEY = accessTokenCache.get(body.portalId);
-    let API_KEY = process.env?.API_KEY;
-    console.log("API KEY from env", API_KEY);
+    let API_KEY = accessTokenCache.get(body.portalId);
+    console.log(API_KEY, "API KEY");
     if (!API_KEY) {
       console.log("Refreshing expired access token");
       API_KEY = await refreshAccessToken(body.portalId).access_token;
