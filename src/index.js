@@ -262,6 +262,7 @@ app.post("/webhook", async (req, res) => {
 
 const exchangeForTokens = async (exchangeProof) => {
   try {
+    console.log(exchangeProof, "------exchange proof");
     const responseBody = await request.post(
       "https://api.hubapi.com/oauth/v1/token",
       {
@@ -288,6 +289,7 @@ const refreshAccessToken = async (portalId) => {
       portalId: portalId,
     },
   });
+  console.log(refreshToken, "-----refresh token");
   const refreshTokenProof = {
     grant_type: "refresh_token",
     client_id: CLIENT_ID,
