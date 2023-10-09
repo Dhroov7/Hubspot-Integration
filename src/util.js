@@ -176,6 +176,18 @@ const callHubspotAPIToUpdateTicket = async (API_KEY, updateObj, ticketId) => {
   });
 }
 
+const callHubspotAPIToGetInbox = async (API_KEY, threadId) => {
+  const response = await axios.get(
+    `https://api.hubapi.com/conversations/v3/conversations/threads/${threadId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    }
+  );
+  return response.data || {};
+}
+
 module.exports = {
   callHubspotAPIToCreateTicket,
   callHubspotAPIToCreateTicketCustomProperty,
@@ -184,5 +196,6 @@ module.exports = {
   callHubspotAPIToGethubspotAccountOwners,
   callHubspotAPIToSendMessage,
   callHubspotAPIToGetPortalID,
-  callHubspotAPIToUpdateTicket
+  callHubspotAPIToUpdateTicket,
+  callHubspotAPIToGetInbox
 };

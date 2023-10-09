@@ -14,6 +14,9 @@ const Thread = sequelize.define('Thread', {
   ticketId: {
     type: DataTypes.NUMBER,
     unique: true
+  },
+  inboxId: {
+    type: DataTypes.NUMBER
   }
 });
 

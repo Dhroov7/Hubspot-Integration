@@ -19,7 +19,8 @@ const {
   callHubspotAPIToGetTicketSettings,
   callHubspotAPIToGethubspotAccountOwners,
   callHubspotAPIToGetPortalID,
-  callHubspotAPIToUpdateTicket
+  callHubspotAPIToUpdateTicket,
+  callHubspotAPIToGetInbox
 } = require("./util");
 
 const PORT = 3000;
@@ -81,7 +82,7 @@ app.use(bodyParser.json());
 // Step 1
 // Build the authorization URL to redirect a user
 // to when they choose to install the app
-const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=https://hubspot-integration.onrender.com/oauth-callback&scope=oauth%20tickets%20conversations.read%20conversations.write%20crm.objects.owners.read`;
+const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=https://hubspot-integration.onrender.com/oauth-callback&scope=oauth%20tickets%20crm.objects.owners.read%20conversations.read%20conversations.write`;
 // 'https://app.hubspot.com/oauth/authorize' +
 // `?client_id=${encodeURIComponent(CLIENT_ID)}` + // app's client ID
 // `&scope=${encodeURIComponent(SCOPES)}` + // scopes being requested by the app
@@ -206,17 +207,24 @@ app.post("/webhook", async (req, res) => {
       await callHubspotAPIToCreateTicketCustomProperty(API_KEY);
     }
     let ticketId = threadData?.dataValues?.ticketId;
+    let inboxId = threadData?.dataValues?.inboxId;
     if (!threadData) {
       const ticketData = await callHubspotAPIToCreateTicket(
         threadId,
         ownerId,
         API_KEY
       );
+      const threadDetails = await callHubspotAPIToGetInbox(API_KEY, threadId);
       ticketId = ticketData.id;
+      inboxId = threadDetails.inboxId;
       await model.Thread.create({
         id: threadId,
         ticketId: ticketId,
+        inboxId: inboxId
       });
+    }
+    if (inboxId !== 334023271) {
+      return res.send('Inbox not supported');
     }
     const ticketProperties = await callHubspotAPIToGetTicketSettings(
       ticketId,
