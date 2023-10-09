@@ -272,6 +272,7 @@ const exchangeForTokens = async (exchangeProof) => {
     // a user identity.
     const tokens = JSON.parse(responseBody);
     console.log("       > Received an access token and refresh token");
+    console.log(tokens, "------tokens");
     return tokens;
   } catch (e) {
     console.error(
