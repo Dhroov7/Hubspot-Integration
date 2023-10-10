@@ -232,10 +232,11 @@ app.post("/webhook", async (req, res) => {
         inboxId: inboxId
       });
     }
-    
+
+    // ignore message processing if not the inbox we are concerned about
     if (inboxId !== INBOX_ID) {
       console.log("Inbox ID set: ", INBOX_ID);
-      console.log("inbox ID is not activated correctly. Current InboxId: ", inboxId);
+      console.log("inbox ID is not activated correctly. Current InboxId: ", inboxId, typeof(inboxId));
       return res.send('Inbox ID Error');
     } else {
       console.log("inbox ID activated: ", inboxId);

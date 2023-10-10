@@ -16,7 +16,7 @@ const Thread = sequelize.define('Thread', {
     unique: true
   },
   inboxId: {
-    type: DataTypes.NUMBER
+    type: DataTypes.STRING
   }
 });
 
