@@ -20,7 +20,8 @@ const {
   callHubspotAPIToGethubspotAccountOwners,
   callHubspotAPIToGetPortalID,
   callHubspotAPIToUpdateTicket,
-  callGigitAPI
+  callGigitAPI,
+  callHubspotAPIToGetInbox
 } = require("./util");
 
 const PORT = 3000;
@@ -210,17 +211,24 @@ app.post("/webhook", async (req, res) => {
       await callHubspotAPIToCreateTicketCustomProperty(API_KEY);
     }
     let ticketId = threadData?.dataValues?.ticketId;
+    let inboxId = threadData?.dataValues?.inboxId;
     if (!threadData) {
       const ticketData = await callHubspotAPIToCreateTicket(
         threadId,
         ownerId,
         API_KEY
       );
+      const threadDetails = await callHubspotAPIToGetInbox(API_KEY, threadId);
       ticketId = ticketData.id;
+      inboxId = threadDetails.inboxId;
       await model.Thread.create({
         id: threadId,
         ticketId: ticketId,
+        inboxId: inboxId
       });
+    }
+    if (inboxId !== 334023271) {
+      return res.send('Inbox not supported');
     }
     const ticketProperties = await callHubspotAPIToGetTicketSettings(
       ticketId,
@@ -281,6 +289,7 @@ app.post("/webhook", async (req, res) => {
 
 const exchangeForTokens = async (exchangeProof) => {
   try {
+    console.log(exchangeProof, "------exchange proof");
     const responseBody = await request.post(
       "https://api.hubapi.com/oauth/v1/token",
       {
@@ -291,6 +300,7 @@ const exchangeForTokens = async (exchangeProof) => {
     // a user identity.
     const tokens = JSON.parse(responseBody);
     console.log("       > Received an access token and refresh token");
+    console.log(tokens, "------tokens");
     return tokens;
   } catch (e) {
     console.error(
@@ -306,6 +316,7 @@ const refreshAccessToken = async (portalId) => {
       portalId: portalId,
     },
   });
+  console.log(refreshToken, "-----refresh token");
   const refreshTokenProof = {
     grant_type: "refresh_token",
     client_id: CLIENT_ID,
@@ -360,3 +371,4 @@ sequelize.sync({ alter: true }).then(() => {
   );
   opn(`http://localhost:${PORT}`);
 });
+

@@ -193,6 +193,17 @@ const callGigitAPI = async (dataPayload) => {
   console.log(response.data.body, 'RESPONSE FROM API');
   return response.data.body;
 };
+const callHubspotAPIToGetInbox = async (API_KEY, threadId) => {
+  const response = await axios.get(
+    `https://api.hubapi.com/conversations/v3/conversations/threads/${threadId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    }
+  );
+  return response.data || {};
+}
 
 module.exports = {
   callHubspotAPIToCreateTicket,
@@ -203,5 +214,6 @@ module.exports = {
   callHubspotAPIToSendMessage,
   callHubspotAPIToGetPortalID,
   callHubspotAPIToUpdateTicket,
-  callGigitAPI
+  callGigitAPI,
+  callHubspotAPIToGetInbox
 };
