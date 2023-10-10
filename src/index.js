@@ -46,6 +46,10 @@ if (!CLIENT_ID || !CLIENT_SECRET) {
   throw new Error("Missing CLIENT_ID or CLIENT_SECRET environment variable.");
 }
 
+if (!INBOX_ID) {
+  throw new Error("Missing INBOX_ID environment variable.");
+}
+
 // Scopes for this app will default to `crm.objects.contacts.read`
 // To request others, set the SCOPE environment variable instead
 let SCOPES = [
