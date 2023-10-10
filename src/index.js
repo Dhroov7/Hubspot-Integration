@@ -227,9 +227,13 @@ app.post("/webhook", async (req, res) => {
         inboxId: inboxId
       });
     }
+    
     if (inboxId !== 334023271) {
       return res.send('Inbox not supported');
+    } else {
+      console.log("inbox ID activated: ", inboxId);
     }
+
     const ticketProperties = await callHubspotAPIToGetTicketSettings(
       ticketId,
       API_KEY
