@@ -40,6 +40,7 @@ const accessTokenCache = new NodeCache({ deleteOnExpire: true });
 // or set them as environment variables before running.
 const CLIENT_ID = process.env?.CLIENT_ID;
 const CLIENT_SECRET = process.env?.CLIENT_SECRET;
+const INBOX_ID = process.env?.INBOX_ID;
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
   throw new Error("Missing CLIENT_ID or CLIENT_SECRET environment variable.");
@@ -228,7 +229,8 @@ app.post("/webhook", async (req, res) => {
       });
     }
     
-    if (inboxId !== process.env?.INBOX_ID) {
+    if (inboxId !== INBOX_ID) {
+      console.log("Inbox ID set: ", INBOX_ID);
       console.log("inbox ID is not activated correctly. Current InboxId: ", inboxId);
       return res.send('Inbox ID Error');
     } else {
