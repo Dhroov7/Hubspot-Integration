@@ -228,8 +228,9 @@ app.post("/webhook", async (req, res) => {
       });
     }
     
-    if (inboxId !== 334023271) {
-      return res.send('Inbox not supported');
+    if (inboxId !== process.env?.INBOX_ID) {
+      console.log("inbox ID is not activated correctly. Current InboxId: ", inboxId);
+      return res.send('Inbox ID Error');
     } else {
       console.log("inbox ID activated: ", inboxId);
     }
