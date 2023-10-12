@@ -160,7 +160,7 @@ app.get("/oauth-callback", async (req, res) => {
     accessTokenCache.set(
       portalId,
       token.access_token,
-      Math.round(token.expires_in * 0.05)
+      Math.round(token.expires_in * 0.16)
     );
     // Once the tokens have been retrieved, use them to make a query
     // to the HubSpot API
