@@ -175,7 +175,7 @@ app.get("/oauth-callback", async (req, res) => {
 app.post("/webhook", async (req, res) => {
   try {
     const body = req.body[0];
-    console.log(body, "------body");
+    console.log("body recevied from /webhook!", body);
     if (!accessTokenCache.get(body.portalId)) {
       console.log("No access token found in cache");
       const tokens = await refreshAccessToken(body.portalId);
@@ -241,11 +241,11 @@ app.post("/webhook", async (req, res) => {
 
     // ignore message processing if not the inbox we are concerned about
     if (inboxId !== INBOX_ID) {
-      console.log("Inbox ID set: ", INBOX_ID);
-      console.log("inbox ID is not activated correctly. Current InboxId: ", inboxId, typeof(inboxId));
+      console.log("Inbox ID currently set in .env: ", INBOX_ID);
+      console.log("This message is sent from InboxId with type: ", inboxId, typeof(inboxId));
       return res.send('Inbox ID Error');
     } else {
-      console.log("inbox ID activated: ", inboxId);
+      console.log("Message sent matches the .env inbox ID activated: ", inboxId);
     }
 
     const ticketProperties = await callHubspotAPIToGetTicketSettings(
@@ -277,7 +277,7 @@ app.post("/webhook", async (req, res) => {
         chatMessage: userMessage,
       };
 
-      console.log(data, "DATA SENT TO API");
+      console.log("DATA SENT TO GIGIT API", data);
 
       const aiGenMessage = await callGigitAPI(data);
       
@@ -296,7 +296,7 @@ app.post("/webhook", async (req, res) => {
     }
     return res.send("Done");
   } catch (err) {
-    console.log(err, "--------err");
+    console.log("--------err was caught somewhere in /webhook", err);
     res.send("Done");
   }
 });
@@ -307,7 +307,7 @@ app.post("/webhook", async (req, res) => {
 
 const exchangeForTokens = async (exchangeProof) => {
   try {
-    console.log(exchangeProof, "------exchange proof");
+    console.log("exchanging proof for refreshed access token", exchangeProof);
     const responseBody = await request.post(
       "https://api.hubapi.com/oauth/v1/token",
       {
@@ -317,8 +317,8 @@ const exchangeForTokens = async (exchangeProof) => {
     // Usually, this token data should be persisted in a database and associated with
     // a user identity.
     const tokens = JSON.parse(responseBody);
-    console.log("       > Received an access token and refresh token");
-    console.log(tokens, "------tokens");
+    console.log("       > Received a renewed access token with refresh token");
+    console.log("------tokens received", tokens);
     return tokens;
   } catch (e) {
     console.error(
@@ -335,7 +335,7 @@ const refreshAccessToken = async (portalId) => {
       portalId: portalId,
     },
   });
-  console.log(refreshToken, "-----refresh token");
+  console.log("refresh token retrieved from DB", refreshToken);
   const refreshTokenProof = {
     grant_type: "refresh_token",
     client_id: CLIENT_ID,
