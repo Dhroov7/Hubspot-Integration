@@ -181,6 +181,12 @@ app.post("/webhook", async (req, res) => {
     if (!API_KEY) {
       console.log("Refreshing expired access token");
       API_KEY = await refreshAccessToken(body.portalId).access_token;
+      console.log("Refreshed access token", API_KEY);
+      accessTokenCache.set(
+        portalId,
+        API_KEY,
+        Math.round(tokens.expires_in * 0.16)
+      );
     }
     const threadId = body.objectId;
     const portalId = body.portalId;
@@ -323,6 +329,7 @@ const exchangeForTokens = async (exchangeProof) => {
 };
 
 const refreshAccessToken = async (portalId) => {
+  // always be ONE RefreshToken per portalId
   const refreshToken = await model.RefreshToken.findOne({
     where: {
       portalId: portalId,
@@ -336,7 +343,8 @@ const refreshAccessToken = async (portalId) => {
     redirect_uri: REDIRECT_URI,
     refresh_token: refreshToken?.dataValues?.token,
   };
-  return await exchangeForTokens(refreshTokenProof);
+  // get new access_token when expires
+  return await exchangeForTokens(refreshTokenProof, portalId);
 };
 
 const isAuthorized = async (portalId) => {
