@@ -176,18 +176,28 @@ app.post("/webhook", async (req, res) => {
   try {
     const body = req.body[0];
     console.log(body, "------body");
-    let API_KEY = accessTokenCache.get(body.portalId);
-    console.log(API_KEY, "API KEY");
-    if (!API_KEY) {
-      console.log("Refreshing expired access token");
-      API_KEY = await refreshAccessToken(body.portalId).access_token;
-      console.log("Refreshed access token", API_KEY);
+    if (!accessTokenCache.get(body.portalId)) {
+      console.log("No access token found in cache");
+      const tokens = await refreshAccessToken(body.portalId);
+      console.log("Refreshed access token", tokens);
       accessTokenCache.set(
-        portalId,
-        API_KEY,
+        body.portalId,
+        tokens.access_token,
         Math.round(tokens.expires_in * 0.16)
       );
     }
+    let API_KEY = accessTokenCache.get(body.portalId);
+    // console.log(API_KEY, "API KEY");
+    // if (!API_KEY) {
+    //   console.log("Refreshing expired access token");
+    //   API_KEY = await refreshAccessToken(body.portalId).access_token;
+    //   console.log("Refreshed access token", API_KEY);
+    //   accessTokenCache.set(
+    //     portalId,
+    //     API_KEY,
+    //     Math.round(tokens.expires_in * 0.16)
+    //   );
+    // }
     const threadId = body.objectId;
     const portalId = body.portalId;
     const [threadData, ownerData] = await Promise.all([
