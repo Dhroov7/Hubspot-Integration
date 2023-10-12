@@ -218,8 +218,13 @@ app.post("/webhook", async (req, res) => {
       ownerId = owner.id;
       actorId = `A-${owner.userId}`;
 
-      //Still not sure where to do this
-      await callHubspotAPIToCreateTicketCustomProperty(API_KEY);
+      try {
+        await callHubspotAPIToCreateTicketCustomProperty(API_KEY);  
+        console.log("Chatbot Enabled Property Created");
+      } catch (error) {
+        console.error("ticket property already exists, so not creating it again", error)
+      }
+      
     }
     let ticketId = threadData?.dataValues?.ticketId;
     let inboxId = threadData?.dataValues?.inboxId;
