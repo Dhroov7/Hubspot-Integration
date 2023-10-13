@@ -1,8 +1,27 @@
 const { Sequelize, DataTypes } = require('sequelize');
+const dotenv = require("dotenv");
 
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: 'db.sqlite'
+dotenv.config();
+
+let { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID } = process.env;
+
+const sequelize = new Sequelize(PGDATABASE, PGUSER, PGPASSWORD, {
+  host: PGHOST,
+  port: 5432,
+  dialect: 'postgres',
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
+  },
+  // storage: 'db.sqlite'
+});
+
+sequelize.authenticate().then(() => {
+  console.log('Connection has been established successfully.');
+}).catch((error) => {
+  console.error('Unable to connect to the database: ', error);
 });
 
 const Thread = sequelize.define('Thread', {
@@ -49,6 +68,13 @@ const RefreshToken = sequelize.define('refreshToken', {
     type: DataTypes.STRING
   }
 });
+
+sequelize.sync().then(() => {
+  console.log('Book table created successfully!');
+}).catch((error) => {
+  console.error('Unable to create table : ', error);
+});
+
 
 module.exports = {
   sequelize,

@@ -64,8 +64,8 @@ if (process.env.SCOPE) {
 }
 
 // On successful install, users will be redirected to /oauth-callback
-// const REDIRECT_URI = `http://localhost:3000/oauth-callback`;
-const REDIRECT_URI = `https://hubspot-install-app.onrender.com/oauth-callback`;
+const REDIRECT_URI = `http://localhost:3000/oauth-callback`;
+// const REDIRECT_URI = `https://hubspot-install-app.onrender.com/oauth-callback`;
 
 //===========================================================================//
 
@@ -87,9 +87,9 @@ app.use(bodyParser.json());
 // Step 1
 // Build the authorization URL to redirect a user
 // to when they choose to install the app
-// const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=http://localhost:3000/oauth-callback&scope=oauth%20tickets%20crm.objects.owners.read%20conversations.read%20conversations.write`
+const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=http://localhost:3000/oauth-callback&scope=oauth%20tickets%20crm.objects.owners.read%20conversations.read%20conversations.write`
 
-const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=https://hubspot-install-app.onrender.com/oauth-callback&scope=oauth%20tickets%20crm.objects.owners.read%20conversations.read%20conversations.write`
+// const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=https://hubspot-install-app.onrender.com/oauth-callback&scope=oauth%20tickets%20crm.objects.owners.read%20conversations.read%20conversations.write`
 
 // 'https://app.hubspot.com/oauth/authorize' +
 // `?client_id=${encodeURIComponent(CLIENT_ID)}` + // app's client ID
