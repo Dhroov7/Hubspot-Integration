@@ -27,7 +27,7 @@ sequelize.authenticate().then(() => {
 
 const Thread = sequelize.define('Thread', {
   id: {
-    type: DataTypes.BIGINT,
+    type: DataTypes.STRING,
     unique: true,
     primaryKey: true
   },

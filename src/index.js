@@ -198,7 +198,7 @@ app.post("/webhook", async (req, res) => {
     const [threadData, ownerData] = await Promise.all([
       model.Thread.findOne({
         where: {
-          id: threadId,
+          id: threadId.toString(),
         },
       }),
       model.Owner.findOne({
