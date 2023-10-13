@@ -181,23 +181,25 @@ app.get("/oauth-callback", async (req, res) => {
 });
 
 app.post("/webhook", async (req, res) => {
+  console.log("body recevied from /webhook!", body);
   try {
     const body = req.body[0];
-    console.log("body recevied from /webhook!", body);
-    if (!accessTokenCache.get(body.portalId)) {
+    const portalId = body.portalId.toString();
+    
+    if (!accessTokenCache.get(portalId)) {
       console.log("No access token found in cache");
-      const tokens = await refreshAccessToken(body.portalId);
+      const tokens = await refreshAccessToken(portalId);
       console.log("Refreshed access token", tokens);
       accessTokenCache.set(
-        body.portalId,
+        portalId,
         tokens.access_token,
-        Math.round(tokens.expires_in * 0.75)
+        Math.round(tokens.expires_in * 0.02)
       );
     }
-    let API_KEY = accessTokenCache.get(body.portalId);
+    let API_KEY = accessTokenCache.get(portalId);
 
     const threadId = body.objectId;
-    const portalId = body.portalId;
+    // const portalId = body.portalId;
     const [threadData, ownerData] = await Promise.all([
       model.Thread.findOne({
         where: {
