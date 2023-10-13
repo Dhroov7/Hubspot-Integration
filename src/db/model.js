@@ -1,4 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
+const postgres = require('pg');
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -26,12 +27,12 @@ sequelize.authenticate().then(() => {
 
 const Thread = sequelize.define('Thread', {
   id: {
-    type: DataTypes.NUMBER,
+    type: DataTypes.BIGINT,
     unique: true,
     primaryKey: true
   },
   ticketId: {
-    type: DataTypes.NUMBER,
+    type: DataTypes.BIGINT,
     unique: true
   },
   inboxId: {
@@ -41,7 +42,7 @@ const Thread = sequelize.define('Thread', {
 
 const Owner = sequelize.define('Owner', {
   id: {
-    type: DataTypes.NUMBER,
+    type: DataTypes.BIGINT,
     unique: true,
     primaryKey: true
   },
@@ -54,7 +55,7 @@ const Owner = sequelize.define('Owner', {
     unique: true
   },
   portalId: {
-    type: DataTypes.NUMBER,
+    type: DataTypes.BIGINT,
     unique: true
   }
 });

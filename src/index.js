@@ -146,17 +146,22 @@ app.get("/oauth-callback", async (req, res) => {
     );
     console.log(userPortalDetails, "------user portal details");
     const portalId = userPortalDetails.portalId;
-    const refreshTokenDetails = await model.RefreshToken.findOne({
-      where: {
-        portalId: portalId
-      }
-    });
-    if (!refreshTokenDetails) {
+
+    try {
+      await model.RefreshToken.findOne({
+        where: {
+          portalId: portalId
+        }
+      });  
+    } catch (error) {
+      console.log("no refresh token found");
+      console.log("storing new refresh token");
       await model.RefreshToken.create({
         portalId: portalId,
         token: token.refresh_token,
       }); 
     }
+    
     accessTokenCache.set(
       portalId,
       token.access_token,
