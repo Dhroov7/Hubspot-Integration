@@ -181,9 +181,9 @@ app.get("/oauth-callback", async (req, res) => {
 });
 
 app.post("/webhook", async (req, res) => {
-  console.log("body recevied from /webhook!", body);
   try {
     const body = req.body[0];
+    console.log("body recevied from /webhook!", body);
     const portalId = body.portalId.toString();
     
     if (!accessTokenCache.get(portalId)) {
